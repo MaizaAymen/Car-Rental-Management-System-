@@ -1,0 +1,209 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Database Test Tool</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            max-width: 800px;
+            margin: 0 auto;
+            padding: 20px;
+        }
+        .form-group {
+            margin-bottom: 15px;
+        }
+        label {
+            display: block;
+            margin-bottom: 5px;
+        }
+        input, select, textarea {
+            width: 100%;
+            padding: 8px;
+            box-sizing: border-box;
+        }
+        textarea {
+            min-height: 150px;
+            font-family: monospace;
+        }
+        button {
+            background-color: #4CAF50;
+            color: white;
+            padding: 10px 15px;
+            border: none;
+            cursor: pointer;
+            margin-right: 10px;
+        }
+        .response {
+            margin-top: 20px;
+            padding: 10px;
+            border: 1px solid #ddd;
+            background-color: #f9f9f9;
+            min-height: 100px;
+            white-space: pre-wrap;
+            font-family: monospace;
+        }
+        .action-buttons {
+            margin-top: 20px;
+            margin-bottom: 20px;
+        }
+        .action-buttons button {
+            margin-right: 10px;
+            margin-bottom: 10px;
+        }
+    </style>
+</head>
+<body>
+    <h1>Database Test Tool</h1>
+    
+    <div class="action-buttons">
+        <button onclick="pingDb()">Ping DB Controller</button>
+        <button onclick="getUserCount()">Get User Count</button>
+        <button onclick="getAllUsers()">Get All Users</button>
+        <button onclick="createTestUser()">Create Test User</button>
+    </div>
+    
+    <div class="form-group">
+        <label for="userId">User ID:</label>
+        <input type="number" id="userId" placeholder="Enter user ID">
+        <button onclick="getUserById()">Get User by ID</button>
+    </div>
+    
+    <div class="form-group">
+        <label for="createUserData">Create User (JSON):</label>
+        <textarea id="createUserData">{
+  "username": "newuser",
+  "password": "password123",
+  "email": "newuser@example.com",
+  "role": "USER"
+}</textarea>
+        <button onclick="createUser()">Create User</button>
+    </div>
+    
+    <h2>Response</h2>
+    <div class="response" id="response">
+        Welcome to the Database Test Tool. Use the buttons above to interact with the database.
+    </div>
+    
+    <div style="margin-top: 20px;">
+        <a href="/" style="color: blue;">Back to Home</a>
+    </div>
+    
+    <script>
+        function displayResponse(data, status = 'success') {
+            const responseElem = document.getElementById('response');
+            if (typeof data === 'object') {
+                responseElem.textContent = JSON.stringify(data, null, 2);
+            } else {
+                responseElem.textContent = data;
+            }
+            
+            if (status === 'error') {
+                responseElem.style.color = 'red';
+            } else {
+                responseElem.style.color = 'black';
+            }
+        }
+        
+        function handleApiError(error) {
+            console.error('API Error:', error);
+            if (error.response) {
+                // The request was made and the server responded with a status code
+                // that falls out of the range of 2xx
+                displayResponse(`Error ${error.response.status}: ${error.response.statusText}\n\n${JSON.stringify(error.response.data, null, 2)}`, 'error');
+            } else if (error.request) {
+                // The request was made but no response was received
+                displayResponse('No response received from server. Check if the server is running.', 'error');
+            } else {
+                // Something happened in setting up the request that triggered an Error
+                displayResponse(`Error: ${error.message}`, 'error');
+            }
+        }
+        
+        function pingDb() {
+            fetch('/api/dbtest/ping')
+                .then(response => response.json())
+                .then(data => {
+                    displayResponse(data);
+                })
+                .catch(error => {
+                    displayResponse(`Error: ${error.message}`, 'error');
+                });
+        }
+        
+        function getUserCount() {
+            fetch('/api/dbtest/count')
+                .then(response => response.json())
+                .then(data => {
+                    displayResponse(data);
+                })
+                .catch(error => {
+                    displayResponse(`Error: ${error.message}`, 'error');
+                });
+        }
+        
+        function getAllUsers() {
+            fetch('/api/dbtest/users')
+                .then(response => response.json())
+                .then(data => {
+                    displayResponse(data);
+                })
+                .catch(error => {
+                    displayResponse(`Error: ${error.message}`, 'error');
+                });
+        }
+        
+        function getUserById() {
+            const userId = document.getElementById('userId').value;
+            if (!userId) {
+                displayResponse('Please enter a User ID', 'error');
+                return;
+            }
+            
+            fetch(`/api/dbtest/users/${userId}`)
+                .then(response => response.json())
+                .then(data => {
+                    displayResponse(data);
+                })
+                .catch(error => {
+                    displayResponse(`Error: ${error.message}`, 'error');
+                });
+        }
+        
+        function createUser() {
+            try {
+                const userData = JSON.parse(document.getElementById('createUserData').value);
+                
+                fetch('/api/dbtest/users', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify(userData)
+                })
+                .then(response => response.json())
+                .then(data => {
+                    displayResponse(data);
+                })
+                .catch(error => {
+                    displayResponse(`Error: ${error.message}`, 'error');
+                });
+            } catch (e) {
+                displayResponse(`Invalid JSON: ${e.message}`, 'error');
+            }
+        }
+        
+        function createTestUser() {
+            fetch('/api/dbtest/test-create-user')
+                .then(response => response.json())
+                .then(data => {
+                    displayResponse(data);
+                })
+                .catch(error => {
+                    displayResponse(`Error: ${error.message}`, 'error');
+                });
+        }
+    </script>
+</body>
+</html>

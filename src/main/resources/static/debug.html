@@ -1,0 +1,182 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>API Debug Tool</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            max-width: 800px;
+            margin: 0 auto;
+            padding: 20px;
+        }
+        .form-group {
+            margin-bottom: 15px;
+        }
+        label {
+            display: block;
+            margin-bottom: 5px;
+        }
+        input, select, textarea {
+            width: 100%;
+            padding: 8px;
+            box-sizing: border-box;
+        }
+        textarea {
+            min-height: 150px;
+            font-family: monospace;
+        }
+        button {
+            background-color: #4CAF50;
+            color: white;
+            padding: 10px 15px;
+            border: none;
+            cursor: pointer;
+            margin-right: 10px;
+        }
+        .response {
+            margin-top: 20px;
+            padding: 10px;
+            border: 1px solid #ddd;
+            background-color: #f9f9f9;
+            min-height: 100px;
+            white-space: pre-wrap;
+            font-family: monospace;
+        }
+    </style>
+</head>
+<body>
+    <h1>API Debug Tool</h1>
+    
+    <div class="form-group">
+        <label for="endpoint">Endpoint:</label>
+        <input type="text" id="endpoint" value="/api/auth/register">
+    </div>
+    
+    <div class="form-group">
+        <label for="method">Method:</label>
+        <select id="method">
+            <option value="GET">GET</option>
+            <option value="POST" selected>POST</option>
+            <option value="PUT">PUT</option>
+            <option value="DELETE">DELETE</option>
+        </select>
+    </div>
+    
+    <div class="form-group">
+        <label for="contentType">Content-Type:</label>
+        <select id="contentType">
+            <option value="application/json" selected>application/json</option>
+            <option value="application/x-www-form-urlencoded">application/x-www-form-urlencoded</option>
+            <option value="multipart/form-data">multipart/form-data</option>
+            <option value="text/plain">text/plain</option>
+        </select>
+    </div>
+    
+    <div class="form-group">
+        <label for="requestBody">Request Body (JSON):</label>
+        <textarea id="requestBody">{
+  "username": "testuser",
+  "password": "password123",
+  "email": "test@example.com",
+  "role": "USER"
+}</textarea>
+    </div>
+    
+    <div>
+        <button onclick="sendRequest()">Send Request</button>
+        <button onclick="testPing()">Test Ping</button>
+        <button onclick="testEcho()">Test Echo</button>
+    </div>
+    
+    <h2>Response</h2>
+    <div class="response" id="response">
+        Waiting for request...
+    </div>
+    
+    <script>
+        function sendRequest() {
+            const endpoint = document.getElementById('endpoint').value;
+            const method = document.getElementById('method').value;
+            const contentType = document.getElementById('contentType').value;
+            const requestBody = document.getElementById('requestBody').value;
+            
+            document.getElementById('response').textContent = 'Sending request...';
+            
+            const options = {
+                method: method,
+                headers: {
+                    'Content-Type': contentType,
+                    'Accept': 'application/json, text/plain, */*'
+                }
+            };
+            
+            if (method !== 'GET' && method !== 'HEAD') {
+                try {
+                    // Only add body for non-GET/HEAD requests
+                    if (contentType === 'application/json') {
+                        // Parse as JSON to validate and stringify to ensure proper format
+                        options.body = JSON.stringify(JSON.parse(requestBody));
+                    } else {
+                        options.body = requestBody;
+                    }
+                } catch (e) {
+                    document.getElementById('response').textContent = `Error parsing JSON: ${e.message}`;
+                    return;
+                }
+            }
+            
+            fetch(endpoint, options)
+                .then(response => {
+                    const responseInfo = `Status: ${response.status} ${response.statusText}\n\n`;
+                    
+                    // Get headers
+                    let headers = 'Headers:\n';
+                    response.headers.forEach((value, name) => {
+                        headers += `${name}: ${value}\n`;
+                    });
+                    headers += '\n';
+                    
+                    // Try to get the body
+                    return response.text().then(text => {
+                        try {
+                            // Try to parse as JSON
+                            const json = JSON.parse(text);
+                            return responseInfo + headers + JSON.stringify(json, null, 2);
+                        } catch {
+                            // If not JSON, return as text
+                            return responseInfo + headers + text;
+                        }
+                    });
+                })
+                .then(result => {
+                    document.getElementById('response').textContent = result;
+                })
+                .catch(error => {
+                    document.getElementById('response').textContent = `Error: ${error.message}`;
+                });
+        }
+        
+        function testPing() {
+            document.getElementById('endpoint').value = '/api/debug/ping';
+            document.getElementById('method').value = 'GET';
+            document.getElementById('requestBody').value = '';
+            sendRequest();
+        }
+        
+        function testEcho() {
+            document.getElementById('endpoint').value = '/api/debug/echo';
+            document.getElementById('method').value = 'POST';
+            document.getElementById('contentType').value = 'application/json';
+            document.getElementById('requestBody').value = JSON.stringify({
+                test: "Hello, World!",
+                number: 123,
+                array: [1, 2, 3],
+                nested: { key: "value" }
+            }, null, 2);
+            sendRequest();
+        }
+    </script>
+</body>
+</html>

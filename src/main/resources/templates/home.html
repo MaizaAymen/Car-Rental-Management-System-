@@ -1,0 +1,268 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org" xmlns:layout="http://www.ultraq.net.nz/thymeleaf/layout" layout:decorate="~{layout/main}">
+<head>
+    <title>Home</title>
+    <style>
+        .car-animation-bg {
+            position: relative;
+            overflow: hidden;
+            padding: 0;
+            margin: 0;
+            height: 150px;
+            border-radius: 0.5rem;
+            background-color: #f3f4f5;
+        }
+        
+        .animated-car {
+            position: absolute;
+            bottom: 15px;
+            animation: drive 10s linear infinite;
+        }
+        
+        .animated-car img {
+            width: 80px;
+            height: auto;
+        }
+        
+        @keyframes drive {
+            0% {
+                transform: translateX(-100px);
+            }
+            100% {
+                transform: translateX(calc(100% + 100px));
+            }
+        }
+        
+        .stats-card {
+            background: linear-gradient(135deg, var(--bg-start) 0%, var(--bg-end) 100%);
+            color: white;
+            border-radius: 0.5rem;
+            padding: 1.5rem;
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+            position: relative;
+            overflow: hidden;
+            height: 100%;
+        }
+        
+        .stats-card::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            right: 0;
+            width: 100px;
+            height: 100px;
+            background: radial-gradient(circle, rgba(255, 255, 255, 0.1) 0%, rgba(255, 255, 255, 0) 70%);
+            border-radius: 50%;
+        }
+        
+        .stats-card.cars {
+            --bg-start: #4361ee;
+            --bg-end: #3f37c9;
+        }
+        
+        .stats-card.clients {
+            --bg-start: #4cc9f0;
+            --bg-end: #4895ef;
+        }
+        
+        .stats-card.rentals {
+            --bg-start: #f72585;
+            --bg-end: #b5179e;
+        }
+        
+        .stats-card.returns {
+            --bg-start: #4d908e;
+            --bg-end: #277da1;
+        }
+        
+        .stats-value {
+            font-size: 2.5rem;
+            font-weight: 700;
+            margin-bottom: 0.5rem;
+        }
+        
+        .stats-label {
+            font-size: 1rem;
+            font-weight: 500;
+            opacity: 0.9;
+        }
+        
+        .stats-icon {
+            position: absolute;
+            top: 1rem;
+            right: 1rem;
+            font-size: 2rem;
+            opacity: 0.3;
+        }
+        
+        .available-cars-section {
+            margin-top: 2rem;
+        }
+        
+        .management-section {
+            margin-top: 2rem;
+        }
+        
+        .car-card {
+            height: 100%;
+        }
+        
+        .management-card {
+            transition: all 0.3s ease;
+            height: 100%;
+        }
+        
+        .management-card:hover {
+            transform: translateY(-10px);
+        }
+        
+        .welcome-message {
+            font-size: 1.1rem;
+            line-height: 1.6;
+            color: #495057;
+        }
+    </style>
+</head>
+<body>
+    <div layout:fragment="content">
+        <div class="row mb-4">
+            <div class="col-12">
+                <div class="jumbotron bg-light p-5 rounded fade-in">
+                    <h1 class="display-4">Welcome to Car Rental Agency</h1>
+                    <p class="lead">Your one-stop solution for car rentals</p>
+                    <hr class="my-4">
+                    <p class="welcome-message">
+                        Browse our collection of available cars and enjoy your journey! We provide quality cars at competitive prices.
+                        Our goal is to make your rental experience smooth and enjoyable.
+                    </p>
+                    <a class="btn btn-primary btn-lg" th:href="@{/web/cars}" role="button">
+                        <i class="bi bi-car-front me-2"></i>Browse Cars
+                    </a>
+                </div>
+            </div>
+        </div>
+
+        <!-- Stats Section -->
+        <div class="row mb-4 fade-in" style="animation-delay: 0.1s;">
+            <div class="col-md-3 mb-4">
+                <div class="stats-card cars">
+                    <i class="bi bi-car-front stats-icon"></i>
+                    <div class="stats-value" th:text="${cars != null ? cars.size() : 0}">0</div>
+                    <div class="stats-label">Total Cars</div>
+                </div>
+            </div>
+            <div class="col-md-3 mb-4">
+                <div class="stats-card clients">
+                    <i class="bi bi-people stats-icon"></i>
+                    <div class="stats-value">0</div>
+                    <div class="stats-label">Total Clients</div>
+                </div>
+            </div>
+            <div class="col-md-3 mb-4">
+                <div class="stats-card rentals">
+                    <i class="bi bi-calendar-check stats-icon"></i>
+                    <div class="stats-value">0</div>
+                    <div class="stats-label">Active Rentals</div>
+                </div>
+            </div>
+            <div class="col-md-3 mb-4">
+                <div class="stats-card returns">
+                    <i class="bi bi-arrow-return-left stats-icon"></i>
+                    <div class="stats-value">0</div>
+                    <div class="stats-label">Completed Rentals</div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Available Cars Section -->
+        <div class="available-cars-section fade-in" style="animation-delay: 0.2s;">
+            <div class="row mb-2">
+                <div class="col-12">
+                    <h2>Available Cars</h2>
+                </div>
+            </div>
+            <div class="row">
+                <div class="col-md-4 mb-4" th:each="car : ${availableCars}" th:if="${car.status == 'AVAILABLE'}">
+                    <div class="card car-card">
+                        <div class="car-animation-bg">
+                            <div class="animated-car">
+                                <img th:src="@{/images/car1.png}" alt="Car">
+                            </div>
+                        </div>
+                        <div class="card-body">
+                            <h5 class="card-title" th:text="${car.brand + ' ' + car.model}"></h5>
+                            <h6 class="card-subtitle mb-2 text-muted" th:text="${car.year}"></h6>
+                            <p class="card-text">
+                                <strong>License Plate:</strong> <span th:text="${car.licensePlate}"></span><br>
+                                <strong>Price Per Day:</strong> $<span th:text="${car.pricePerDay}"></span><br>
+                                <strong>Status:</strong> <span class="badge bg-success" th:text="${car.status}"></span>
+                            </p>
+                            <a th:href="@{/web/rentals/new(carId=${car.id})}" class="btn btn-primary">
+                                <i class="bi bi-calendar-plus me-1"></i> Rent Now
+                            </a>
+                        </div>
+                    </div>
+                </div>
+                <div class="col-12" th:if="${availableCars == null || availableCars.isEmpty() || availableCars.?[status == 'AVAILABLE'].isEmpty()}">
+                    <div class="alert alert-info">
+                        <i class="bi bi-info-circle me-2"></i> No cars are currently available for rent.
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Management Cards Section -->
+        <div class="management-section fade-in" style="animation-delay: 0.3s;">
+            <div class="row mb-2">
+                <div class="col-12">
+                    <h2>Quick Access</h2>
+                </div>
+            </div>
+            <div class="row">
+                <div class="col-md-4 mb-4">
+                    <div class="card text-white bg-primary mb-3 management-card">
+                        <div class="card-header">
+                            <i class="bi bi-car-front me-2"></i> Cars
+                        </div>
+                        <div class="card-body">
+                            <h5 class="card-title">Manage Cars</h5>
+                            <p class="card-text">Add, update, or delete cars from your fleet.</p>
+                            <a th:href="@{/web/cars}" class="btn btn-light">
+                                <i class="bi bi-arrow-right me-1"></i> Go to Cars
+                            </a>
+                        </div>
+                    </div>
+                </div>
+                <div class="col-md-4 mb-4">
+                    <div class="card text-white bg-success mb-3 management-card">
+                        <div class="card-header">
+                            <i class="bi bi-people me-2"></i> Clients
+                        </div>
+                        <div class="card-body">
+                            <h5 class="card-title">Manage Clients</h5>
+                            <p class="card-text">Manage your client database efficiently.</p>
+                            <a th:href="@{/web/clients}" class="btn btn-light">
+                                <i class="bi bi-arrow-right me-1"></i> Go to Clients
+                            </a>
+                        </div>
+                    </div>
+                </div>
+                <div class="col-md-4 mb-4">
+                    <div class="card text-white bg-info mb-3 management-card">
+                        <div class="card-header">
+                            <i class="bi bi-calendar-check me-2"></i> Rentals
+                        </div>
+                        <div class="card-body">
+                            <h5 class="card-title">Manage Rentals</h5>
+                            <p class="card-text">Keep track of all active and completed rentals.</p>
+                            <a th:href="@{/web/rentals}" class="btn btn-light">
+                                <i class="bi bi-arrow-right me-1"></i> Go to Rentals
+                            </a>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</body>
+</html>

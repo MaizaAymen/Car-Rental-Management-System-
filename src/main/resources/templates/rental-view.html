@@ -1,0 +1,32 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org" xmlns:layout="http://www.ultraq.net.nz/thymeleaf/layout" layout:decorate="~{layout/main}">
+<head>
+    <title>Rental Details</title>
+</head>
+<body>
+    <div layout:fragment="content">
+        <div class="card mt-4">
+            <div class="card-header">
+                <h2>Rental Details</h2>
+            </div>
+            <div class="card-body" th:if="${rental != null}">
+                <ul class="list-group">
+                    <li class="list-group-item"><strong>ID:</strong> <span th:text="${rental.id}"></span></li>
+                    <li class="list-group-item"><strong>Client ID:</strong> <span th:text="${rental.clientId}"></span></li>
+                    <li class="list-group-item"><strong>Car ID:</strong> <span th:text="${rental.carId}"></span></li>
+                    <li class="list-group-item"><strong>Start Date:</strong> <span th:text="${rental.startDate}"></span></li>
+                    <li class="list-group-item"><strong>End Date:</strong> <span th:text="${rental.endDate}"></span></li>
+                    <li class="list-group-item"><strong>Total Price:</strong> $<span th:text="${rental.totalPrice}"></span></li>
+                    <li class="list-group-item"><strong>Status:</strong> <span th:text="${rental.status}"></span></li>
+                </ul>
+            </div>
+            <div class="card-body" th:if="${rental == null}">
+                <div class="alert alert-danger">Rental not found.</div>
+            </div>
+            <div class="card-footer">
+                <a th:href="@{/web/rentals}" class="btn btn-secondary">Back to Rentals</a>
+            </div>
+        </div>
+    </div>
+</body>
+</html>

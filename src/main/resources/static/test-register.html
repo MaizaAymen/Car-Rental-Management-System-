@@ -1,0 +1,123 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Test Registration</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            max-width: 600px;
+            margin: 0 auto;
+            padding: 20px;
+        }
+        .form-group {
+            margin-bottom: 15px;
+        }
+        label {
+            display: block;
+            margin-bottom: 5px;
+        }
+        input {
+            width: 100%;
+            padding: 8px;
+            box-sizing: border-box;
+        }
+        button {
+            background-color: #4CAF50;
+            color: white;
+            padding: 10px 15px;
+            border: none;
+            cursor: pointer;
+        }
+        .response {
+            margin-top: 20px;
+            padding: 10px;
+            border: 1px solid #ddd;
+            background-color: #f9f9f9;
+        }
+    </style>
+</head>
+<body>
+    <h1>Test User Registration</h1>
+    
+    <div class="form-group">
+        <label for="username">Username:</label>
+        <input type="text" id="username" value="testuser">
+    </div>
+    
+    <div class="form-group">
+        <label for="password">Password:</label>
+        <input type="password" id="password" value="password123">
+    </div>
+    
+    <div class="form-group">
+        <label for="email">Email:</label>
+        <input type="email" id="email" value="test@example.com">
+    </div>
+    
+    <div class="form-group">
+        <label for="role">Role:</label>
+        <input type="text" id="role" value="USER">
+    </div>
+    
+    <button onclick="registerUser()">Register</button>
+    
+    <div class="response" id="response">
+        <p>Response will appear here</p>
+    </div>
+      <script>
+        function registerUser() {
+            const userData = {
+                username: document.getElementById('username').value,
+                password: document.getElementById('password').value,
+                email: document.getElementById('email').value,
+                role: document.getElementById('role').value
+            };
+            
+            console.log('Sending data:', userData);
+            
+            // Display what we're about to send
+            document.getElementById('response').innerHTML = 
+                '<p>Sending request to /api/auth/register with data:</p>' +
+                '<pre>' + JSON.stringify(userData, null, 2) + '</pre>';
+            
+            fetch('/api/auth/register', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'Accept': 'application/json'
+                },
+                body: JSON.stringify(userData)
+            })
+            .then(response => {
+                console.log('Response status:', response.status);
+                console.log('Response headers:', response.headers);
+                
+                if (!response.ok) {
+                    return response.text().then(text => {
+                        document.getElementById('response').innerHTML += 
+                            '<p style="color: orange;">Response status: ' + response.status + ' ' + response.statusText + '</p>';
+                        throw new Error(text || response.statusText);
+                    });
+                }
+                return response.json();
+            })            .then(data => {
+                document.getElementById('response').innerHTML = 
+                    '<p style="color: green;">Success!</p>' +
+                    '<pre>' + JSON.stringify(data, null, 2) + '</pre>';
+            })
+            .catch(error => {
+                document.getElementById('response').innerHTML = 
+                    '<p style="color: red;">Error: ' + error.message + '</p>' +
+                    '<p>Check the browser console for more details.</p>';
+                console.error('Error:', error);
+            });
+        }
+    </script>
+    
+    <div style="margin-top: 20px;">
+        <a href="/" style="color: blue;">Back to Home</a>
+    </div>
+</body>
+</html>
